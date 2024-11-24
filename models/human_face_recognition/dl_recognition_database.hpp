@@ -3,33 +3,33 @@
 #include "dl_recognition_database_base.hpp"
 #include "esp_spiffs.h"
 #include "esp_vfs.h"
-#include "esp_vfs_fat.h"
-#include "bsp/esp-bsp.h"
+// #include "esp_vfs_fat.h"
+// #include "bsp/esp-bsp.h"
 
 namespace dl {
 namespace recognition {
-class FatFsFlashDataBase : public DataBase {
-private:
-    wl_handle_t wl_handle;
-    esp_err_t mount() override;
-    esp_err_t unmount() override;
-    esp_err_t check_enough_free_space() override;
+// class FatFsFlashDataBase : public DataBase {
+// private:
+//     wl_handle_t wl_handle;
+//     esp_err_t mount() override;
+//     esp_err_t unmount() override;
+//     esp_err_t check_enough_free_space() override;
 
-public:
-    FatFsFlashDataBase(int feat_len, const char *name);
-    ~FatFsFlashDataBase();
-};
+// public:
+//     FatFsFlashDataBase(int feat_len, const char *name);
+//     ~FatFsFlashDataBase();
+// };
 
-class FatFsSDCardDataBase : public DataBase {
-private:
-    esp_err_t mount() override;
-    esp_err_t unmount() override;
-    esp_err_t check_enough_free_space() override;
+// class FatFsSDCardDataBase : public DataBase {
+// private:
+//     esp_err_t mount() override;
+//     esp_err_t unmount() override;
+//     esp_err_t check_enough_free_space() override;
 
-public:
-    FatFsSDCardDataBase(int feat_len, const char *name);
-    ~FatFsSDCardDataBase();
-};
+// public:
+//     FatFsSDCardDataBase(int feat_len, const char *name);
+//     ~FatFsSDCardDataBase();
+// };
 
 class SPIFFSDataBase : public DataBase {
 private:
@@ -54,7 +54,8 @@ public:
     {
         return this->db->query_feat(feat, thr, top_k);
     }
-
+    void print() { this->db->print(); }
+    uint16_t feat_num() { return this->db->get_feat_num(); }
 private:
     DataBase *db;
 };

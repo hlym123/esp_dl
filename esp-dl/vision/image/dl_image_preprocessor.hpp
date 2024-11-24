@@ -5,7 +5,9 @@
 #include "stdint.h"
 // #include "dl_detect_define.hpp"
 #include "esp_cache.h"
+#if CONFIG_IDF_TARGET_ESP32P4
 #include "driver/ppa.h"
+#endif 
 #include "esp_private/esp_cache_private.h"
 
 namespace dl {

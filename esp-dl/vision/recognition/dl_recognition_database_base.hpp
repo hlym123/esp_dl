@@ -18,6 +18,7 @@ public:
     esp_err_t delete_last_feat();
     std::list<query_info> query_feat(TensorBase *feat, float thr, int top_k);
     void print();
+    uint16_t get_feat_num();
 
 protected:
     char db_path[50];

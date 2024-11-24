@@ -1,10 +1,49 @@
 #include "dl_recognition_database.hpp"
+#include "esp_spiffs.h"
+#include "sdkconfig.h"
+ 
 
 static const char *TAG = "dl::recognition::DataBase";
 
+  
+#define CONFIG_BSP_SPIFFS_MOUNT_POINT       "/spiffs"
+#define CONFIG_BSP_SPIFFS_PARTITION_LABEL   "storage" 
+#define CONFIG_BSP_SPIFFS_MAX_FILES         5
+
+ 
+static esp_err_t bsp_spiffs_mount(void)
+{
+    esp_vfs_spiffs_conf_t conf = {
+        .base_path = CONFIG_BSP_SPIFFS_MOUNT_POINT,  
+        .partition_label = CONFIG_BSP_SPIFFS_PARTITION_LABEL,  
+        .max_files = CONFIG_BSP_SPIFFS_MAX_FILES,  
+        .format_if_mount_failed = true,
+    };
+
+    esp_err_t ret_val = esp_vfs_spiffs_register(&conf);
+
+    size_t total = 0, used = 0;
+    ret_val = esp_spiffs_info(conf.partition_label, &total, &used);
+    if (ret_val != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret_val));
+    } else {
+        ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
+    }
+
+    return ret_val;
+}
+
+static esp_err_t bsp_spiffs_unmount(void)
+{
+    return esp_vfs_spiffs_unregister(CONFIG_BSP_SPIFFS_PARTITION_LABEL);
+}
+
+
 namespace dl {
 namespace recognition {
-FatFsFlashDataBase::FatFsFlashDataBase(int feat_len, const char *name) : DataBase(name)
+
+    
+/*FatFsFlashDataBase::FatFsFlashDataBase(int feat_len, const char *name) : DataBase(name)
 {
     this->init(feat_len);
 }
@@ -58,19 +97,24 @@ FatFsSDCardDataBase::~FatFsSDCardDataBase()
 
 esp_err_t FatFsSDCardDataBase::mount()
 {
-    snprintf(this->db_path, sizeof(db_path), "%s/%s.db", CONFIG_BSP_SD_MOUNT_POINT, this->name);
-    return bsp_sdcard_mount();
+    // snprintf(this->db_path, sizeof(db_path), "%s/%s.db", CONFIG_BSP_SD_MOUNT_POINT, this->name);
+    // return bsp_sdcard_mount();
+
+    snprintf(this->db_path, sizeof(db_path), "%s/%s.db", "/sd", this->name);
+    return ESP_FAIL;
 }
 
 esp_err_t FatFsSDCardDataBase::unmount()
 {
-    return bsp_sdcard_unmount();
+    // return bsp_sdcard_unmount();
+    return ESP_FAIL;
 }
 
 esp_err_t FatFsSDCardDataBase::check_enough_free_space()
 {
     uint64_t total_bytes, free_bytes;
-    ESP_ERROR_CHECK(esp_vfs_fat_info(CONFIG_BSP_SD_MOUNT_POINT, &total_bytes, &free_bytes));
+    //ESP_ERROR_CHECK(esp_vfs_fat_info(CONFIG_BSP_SD_MOUNT_POINT, &total_bytes, &free_bytes));
+    ESP_ERROR_CHECK(esp_vfs_fat_info("/sd", &total_bytes, &free_bytes));
 
     // sector_size <= allocation unit <= sector_size * 128. For SD cards, sector size is always 512 bytes.
     if (free_bytes < 512 * 128) {
@@ -78,6 +122,8 @@ esp_err_t FatFsSDCardDataBase::check_enough_free_space()
     }
     return ESP_OK;
 }
+*/
+
 
 SPIFFSDataBase::SPIFFSDataBase(int feat_len, const char *name) : DataBase(name)
 {
@@ -98,6 +144,7 @@ esp_err_t SPIFFSDataBase::mount()
 esp_err_t SPIFFSDataBase::unmount()
 {
     return bsp_spiffs_unmount();
+    return ESP_FAIL;
 }
 
 esp_err_t SPIFFSDataBase::check_enough_free_space()
@@ -116,12 +163,15 @@ DB::DB(db_type_t db_type, int feat_len, const char *name)
 {
     switch (db_type) {
     case DB_FATFS_FLASH:
-        this->db = new FatFsFlashDataBase(feat_len, name);
+  //      this->db = new FatFsFlashDataBase(feat_len, name);
+    printf("db_type: fatfs flash\n");
         break;
     case DB_FATFS_SDCARD:
-        this->db = new FatFsSDCardDataBase(feat_len, name);
+    printf("db_type: fatfs sdcard\n");
+//  this->db = new FatFsSDCardDataBase(feat_len, name);
         break;
     case DB_SPIFFS:
+    printf("db_type: spiffs\n");
         this->db = new SPIFFSDataBase(feat_len, name);
         break;
     }

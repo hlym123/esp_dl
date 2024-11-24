@@ -47,7 +47,7 @@ elseif(CONFIG_IDF_TARGET_ESP32P4)
 endif()
 
 set(requires        esp_mm
-                    esp_driver_ppa
+                    #esp_driver_ppa
                     esp_partition
                     esp_timer
                     mbedtls

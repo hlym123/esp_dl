@@ -5,7 +5,7 @@
 #include "dl_recognition_face_image_preprocessor.hpp"
 #include "dl_recognition_postprocessor.hpp"
 #include "dl_tensor_base.hpp"
-#include "human_face_detect.hpp"
+// #include "human_face_detect.hpp"
 
 class HumanFaceFeat {
 private:
@@ -39,19 +39,29 @@ public:
 
 class FaceRecognizer : public dl::recognition::DB {
 private:
-    HumanFaceDetect *detect;
+    // HumanFaceDetect *detect;
     HumanFaceFeat *feat_extract;
     float thr;
     int top_k;
     int model_type;
 
 public:
+    // FaceRecognizer(dl::recognition::db_type_t db_type = dl::recognition::DB_FATFS_FLASH,
+    //                HumanFaceFeat::model_type_t model_type = HumanFaceFeat::model_type_t::MODEL_MFN,
+    //                float thr = 0.5,
+    //                int top_k = 1) :
+    //     dl::recognition::DB(db_type, 512, "face"),
+    //     detect(new HumanFaceDetect()),
+    //     feat_extract(new HumanFaceFeat(model_type)),
+    //     thr(thr),
+    //     top_k(top_k)
+    // {
+    // }
     FaceRecognizer(dl::recognition::db_type_t db_type = dl::recognition::DB_FATFS_FLASH,
                    HumanFaceFeat::model_type_t model_type = HumanFaceFeat::model_type_t::MODEL_MFN,
                    float thr = 0.5,
                    int top_k = 1) :
         dl::recognition::DB(db_type, 512, "face"),
-        detect(new HumanFaceDetect()),
         feat_extract(new HumanFaceFeat(model_type)),
         thr(thr),
         top_k(top_k)
@@ -60,11 +70,17 @@ public:
 
     ~FaceRecognizer();
 
+    // template <typename T>
+    // std::vector<std::list<dl::recognition::query_info>> recognize(T *input_element,
+    //                                                               const std::vector<int> &input_shape);
+    // template <typename T>
+    // esp_err_t enroll(T *input_element, const std::vector<int> &input_shape);
     template <typename T>
     std::vector<std::list<dl::recognition::query_info>> recognize(T *input_element,
-                                                                  const std::vector<int> &input_shape);
+                                                                  const std::vector<int> &input_shape,
+                                                                  const std::vector<std::vector<int>> &keypoints);
     template <typename T>
-    esp_err_t enroll(T *input_element, const std::vector<int> &input_shape);
+    esp_err_t enroll(T *input_element, const std::vector<int> &input_shape, const std::vector<int> &keypoint);
 };
 
 namespace model_zoo {

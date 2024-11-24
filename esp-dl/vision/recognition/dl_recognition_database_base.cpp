@@ -211,6 +211,10 @@ esp_err_t DataBase::delete_feat(uint16_t id)
             return ESP_FAIL;
         }
 
+        // TODO: 待优化
+        this->meta.num_feats_total--;
+        size = fwrite(&this->meta.num_feats_total, sizeof(uint16_t), 1, f);
+
         offset = sizeof(uint16_t);
         if (fseek(f, offset, SEEK_SET) == 0) {
             size = fwrite(&this->meta.num_feats_valid, sizeof(uint16_t), 1, f);
@@ -290,6 +294,13 @@ void DataBase::print()
     }
     printf("\n");
 }
+
+uint16_t DataBase::get_feat_num()
+{
+    //return this->meta.num_feats_total;
+    return this->meta.num_feats_valid;
+}
+
 
 } // namespace recognition
 } // namespace dl

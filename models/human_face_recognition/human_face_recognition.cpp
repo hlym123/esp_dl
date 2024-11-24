@@ -38,58 +38,96 @@ template dl::TensorBase *HumanFaceFeat::run(uint16_t *input_element,
 
 FaceRecognizer::~FaceRecognizer()
 {
-    if (this->detect) {
-        delete this->detect;
-        this->detect = nullptr;
-    }
+    // if (this->detect) {
+    //     delete this->detect;
+    //     this->detect = nullptr;
+    // }
     if (this->feat_extract) {
         delete this->feat_extract;
         this->feat_extract = nullptr;
     }
 }
 
+// template <typename T>
+// std::vector<std::list<dl::recognition::query_info>> FaceRecognizer::recognize(T *input_element,
+//                                                                               const std::vector<int> &input_shape)
+// {
+//     auto detect_results = this->detect->run(input_element, input_shape);
+//     std::vector<std::list<dl::recognition::query_info>> res;
+//     if (detect_results.empty()) {
+//         ESP_LOGW("FaceRecognizer", "Failed to recognize. No face detected.");
+//         return {};
+//     } else if (detect_results.size() == 1) {
+//         auto feat = this->feat_extract->run(input_element, input_shape, detect_results.back().keypoint);
+//         res.emplace_back(this->query_feat(feat, this->thr, this->top_k));
+//     } else {
+//         for (const auto &detect_res : detect_results) {
+//             auto feat = this->feat_extract->run(input_element, input_shape, detect_res.keypoint);
+//             res.emplace_back(this->query_feat(feat, this->thr, this->top_k));
+//         }
+//     }
+//     return res;
+// }
+// template std::vector<std::list<dl::recognition::query_info>> FaceRecognizer::recognize(
+//     uint8_t *input_element, const std::vector<int> &input_shape);
+// template std::vector<std::list<dl::recognition::query_info>> FaceRecognizer::recognize(
+//     uint16_t *input_element, const std::vector<int> &input_shape);
+
 template <typename T>
 std::vector<std::list<dl::recognition::query_info>> FaceRecognizer::recognize(T *input_element,
-                                                                              const std::vector<int> &input_shape)
+                                                                              const std::vector<int> &input_shape,
+                                                                              const std::vector<std::vector<int>> &keypoints)
 {
-    auto detect_results = this->detect->run(input_element, input_shape);
     std::vector<std::list<dl::recognition::query_info>> res;
-    if (detect_results.empty()) {
-        ESP_LOGW("FaceRecognizer", "Failed to recognize. No face detected.");
+    if (keypoints.empty()) {
+        ESP_LOGW("FaceRecognizer", "Failed to recognize. No keypoints provided.");
         return {};
-    } else if (detect_results.size() == 1) {
-        auto feat = this->feat_extract->run(input_element, input_shape, detect_results.back().keypoint);
+    } else if (keypoints.size() == 1) {
+        auto feat = this->feat_extract->run(input_element, input_shape, keypoints.back());
         res.emplace_back(this->query_feat(feat, this->thr, this->top_k));
     } else {
-        for (const auto &detect_res : detect_results) {
-            auto feat = this->feat_extract->run(input_element, input_shape, detect_res.keypoint);
+        for (const auto &keypoint : keypoints) {
+            auto feat = this->feat_extract->run(input_element, input_shape, keypoint);
             res.emplace_back(this->query_feat(feat, this->thr, this->top_k));
         }
     }
     return res;
 }
+
 template std::vector<std::list<dl::recognition::query_info>> FaceRecognizer::recognize(
-    uint8_t *input_element, const std::vector<int> &input_shape);
+    uint8_t *input_element, const std::vector<int> &input_shape, const std::vector<std::vector<int>> &keypoints);
+
 template std::vector<std::list<dl::recognition::query_info>> FaceRecognizer::recognize(
-    uint16_t *input_element, const std::vector<int> &input_shape);
+    uint16_t *input_element, const std::vector<int> &input_shape, const std::vector<std::vector<int>> &keypoints);
+
+
+// template <typename T>
+// esp_err_t FaceRecognizer::enroll(T *input_element, const std::vector<int> &input_shape)
+// {
+//     auto &detect_results = this->detect->run(input_element, input_shape);
+//     if (detect_results.empty()) {
+//         ESP_LOGW("FaceRecognizer", "Failed to enroll. No face detected.");
+//         return ESP_FAIL;
+//     } else if (detect_results.size() == 1) {
+//         auto feat = this->feat_extract->run(input_element, input_shape, detect_results.back().keypoint);
+//         return this->enroll_feat(feat);
+//     } else {
+//         ESP_LOGW("FaceRecognizer", "Failed to enroll. Multiple faces detected, please keep one face in picture.");
+//         return ESP_FAIL;
+//     }
+// }
+// template esp_err_t FaceRecognizer::enroll(uint8_t *input_element, const std::vector<int> &input_shape);
+// template esp_err_t FaceRecognizer::enroll(uint16_t *input_element, const std::vector<int> &input_shape);
 
 template <typename T>
-esp_err_t FaceRecognizer::enroll(T *input_element, const std::vector<int> &input_shape)
+esp_err_t FaceRecognizer::enroll(T *input_element, const std::vector<int> &input_shape, const std::vector<int> &keypoint)
 {
-    auto &detect_results = this->detect->run(input_element, input_shape);
-    if (detect_results.empty()) {
-        ESP_LOGW("FaceRecognizer", "Failed to enroll. No face detected.");
-        return ESP_FAIL;
-    } else if (detect_results.size() == 1) {
-        auto feat = this->feat_extract->run(input_element, input_shape, detect_results.back().keypoint);
-        return this->enroll_feat(feat);
-    } else {
-        ESP_LOGW("FaceRecognizer", "Failed to enroll. Multiple faces detected, please keep one face in picture.");
-        return ESP_FAIL;
-    }
+    auto feat = this->feat_extract->run(input_element, input_shape, keypoint);
+    return this->enroll_feat(feat);
 }
-template esp_err_t FaceRecognizer::enroll(uint8_t *input_element, const std::vector<int> &input_shape);
-template esp_err_t FaceRecognizer::enroll(uint16_t *input_element, const std::vector<int> &input_shape);
+template esp_err_t FaceRecognizer::enroll(uint8_t *input_element, const std::vector<int> &input_shape, const std::vector<int> &keypoint);
+template esp_err_t FaceRecognizer::enroll(uint16_t *input_element, const std::vector<int> &input_shape, const std::vector<int> &keypoint);
+
 
 namespace model_zoo {
 

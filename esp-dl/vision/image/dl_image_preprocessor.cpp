@@ -183,7 +183,7 @@ void ImagePreprocessor<feature_t>::preprocess(T *input_element,
                             input_area_x_start,
                             input_area_x_end,
                             IMAGE_RESIZE_NEAREST,
-                            this->rgb_swap);
+                            true); // this->rgb_swap
         }
         latency.end();
         latency.print("image_preprocess", "resize");
