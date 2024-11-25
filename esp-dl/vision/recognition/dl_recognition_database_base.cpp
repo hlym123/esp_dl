@@ -212,8 +212,8 @@ esp_err_t DataBase::delete_feat(uint16_t id)
         }
 
         // TODO: 待优化
-        this->meta.num_feats_total--;
-        size = fwrite(&this->meta.num_feats_total, sizeof(uint16_t), 1, f);
+        // this->meta.num_feats_total--;
+        // size = fwrite(&this->meta.num_feats_total, sizeof(uint16_t), 1, f);
 
         offset = sizeof(uint16_t);
         if (fseek(f, offset, SEEK_SET) == 0) {
